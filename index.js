@@ -32,5 +32,5 @@ app.listen(port,()=>{
 });
 
 app.use('/home',(req,res)=>{
-    res.send("<h1>Welcome to Multivendor application");
+    res.send("<h1>Welcome to Somato Application");
 })
