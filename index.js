@@ -31,6 +31,6 @@ app.listen(port,()=>{
     console.log(`server started and running at port ${port}`);
 });
 
-app.use('/home',(req,res)=>{
+app.use('/',(req,res)=>{
     res.send("<h1>Welcome to Somato Application");
 })
