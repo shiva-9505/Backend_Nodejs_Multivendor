@@ -6,10 +6,12 @@ const bodyParser=require('body-parser');
 const firmRoutes=require('./routes/firmRoutes');
 const productRoutes=require('./routes/productRoutes');
 const path=require('path');
+const cors=require('cors')
 
 
 const port= process.env.PORT || 5000;
 const app=express();
+
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI)
     .then(()=>{
@@ -18,7 +20,7 @@ mongoose.connect(process.env.MONGO_URI)
     .catch((error)=>{
         console.log(error);
     })
-
+app.use(cors())
     
 app.use(bodyParser.json());
 app.use('/vendor',vendorRoutes);
