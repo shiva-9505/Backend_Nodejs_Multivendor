@@ -34,5 +34,5 @@ app.listen(port,()=>{
 });
 
 app.use('/',(req,res)=>{
-    res.send("<h1>Welcome to Somato Application");
+    res.send("<h1>Welcome to Tomato Application");
 })
