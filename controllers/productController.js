@@ -16,6 +16,9 @@ const upload = require("../middlewares/cloudinaryStorage");
 //     const upload=multer({storage:storage});
 
 const addProduct=async(req,res)=>{
+    console.log("===== LIVE PRODUCT API HIT =====");
+    console.log("Request Body:", req.body);
+    console.log("Uploaded File:", req.file);
     const {productName,price,category,bestSeller,description}=req.body;
     const image=req.file?.path;  //req.file.filename:undefined;
     try {
