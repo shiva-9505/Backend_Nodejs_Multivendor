@@ -1,22 +1,23 @@
 const Product=require('../models/Product');
-const multer=require('multer');
+// const multer=require('multer');
 const Firm=require('../models/Firm');
-const path=require('path');
+// const path=require('path');
+const upload = require("../middlewares/cloudinaryStorage");
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-         cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-         const uniqueName = Date.now() + path.extname(file.originalname);
-     cb(null, uniqueName);
-     }
-    });
-    const upload=multer({storage:storage});
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//          cb(null, 'uploads/');
+//     },
+//     filename: function (req, file, cb) {
+//          const uniqueName = Date.now() + path.extname(file.originalname);
+//      cb(null, uniqueName);
+//      }
+//     });
+//     const upload=multer({storage:storage});
 
 const addProduct=async(req,res)=>{
     const {productName,price,category,bestSeller,description}=req.body;
-    const image=req.file? req.file.filename:undefined;
+    const image=req.file?.path;  //req.file.filename:undefined;
     try {
         const firmId=req.params.firmId;
         const firm=await Firm.findById(firmId);
@@ -28,7 +29,7 @@ const addProduct=async(req,res)=>{
         });
         const savedProduct=await product.save();
         firm.products.push(savedProduct);
-        firm.save();
+        await firm.save();
 
         res.status(200).json({savedProduct});
 
