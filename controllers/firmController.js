@@ -2,17 +2,19 @@ const Firm=require('../models/Firm');
 const Vendor=require('../models/Vendor');
 const multer=require('multer');
 const path=require('path');
+const upload = require("../middlewares/cloudinaryStorage"); // import upload middleware
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-         cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-         const uniqueName = Date.now() + path.extname(file.originalname);
-     cb(null, uniqueName);
-     }
-    });
-    const upload=multer({storage:storage});
+
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//          cb(null, 'uploads/');
+//     },
+//     filename: function (req, file, cb) {
+//          const uniqueName = Date.now() + path.extname(file.originalname);
+//      cb(null, uniqueName);
+//      }
+//     });
+//     const upload=multer({storage:storage});
 
 
 const addFirm = async(req,res)=>{
@@ -21,7 +23,7 @@ const addFirm = async(req,res)=>{
   try{
     const {firmName,area, category, region,offer}=req.body;
 
-    const image=req.file? req.file.filename: undefined;
+    const image=req.file?.path; //req.file.filename: undefined;
     const vendor = await Vendor.findById(req.vendorId);
 
     if(!vendor){
@@ -43,11 +45,10 @@ const addFirm = async(req,res)=>{
     })
 
     const savedFirm = await firm.save();
-    /*added this */
-    const firmId=savedFirm._id;
-
     vendor.firm.push(savedFirm);
     await vendor.save();
+      /*added this */
+    const firmId=savedFirm._id;
    
     /*sending firmId as response to frontend */
     res.status(200).json({message:"Firm added Successfully", firmId});
@@ -68,6 +69,8 @@ const deleteFirmById=async(req,res)=>{
             return res.status(404).json({error:"No firm Found"});
 
         }
+
+        res.status(200).json({message:"Firm deleted successfully"});
     } catch (error) {
         console.error(error);
         res.status(500).json({error:"Internal server error"})

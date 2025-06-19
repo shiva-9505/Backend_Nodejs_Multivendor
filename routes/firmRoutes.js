@@ -1,6 +1,8 @@
 const express=require('express');
 const firmController=require('../controllers/firmController');
 const verifyToken=require('../middlewares/verifyToken');
+const upload = require("../middlewares/cloudinaryStorage"); // import upload middleware
+
 
 
 const router=express.Router();
