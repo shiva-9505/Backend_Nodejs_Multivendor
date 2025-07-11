@@ -6,8 +6,8 @@ const bodyParser=require('body-parser');
 const firmRoutes=require('./routes/firmRoutes');
 const productRoutes=require('./routes/productRoutes');
 const path=require('path');
-const cors=require('cors')
-
+const cors=require('cors');
+const userRoutes=require('./routes/userRoutes');
 
 const port= process.env.PORT || 5000;
 const app=express();
@@ -26,6 +26,7 @@ app.use(bodyParser.json());
 app.use('/vendor',vendorRoutes);
 app.use('/firm',firmRoutes);
 app.use('/product',productRoutes);
+app.use('/user',userRoutes);
 app.use('/uploads',express.static('uploads'));
 
 
