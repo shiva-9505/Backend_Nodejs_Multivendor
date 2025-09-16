@@ -44,7 +44,7 @@ const vendorLogin=async(req,res)=>{
 
         const vendorId=vendor._id;
         res.status(200).json({success:"vendor Login successful",token, vendorId});
-        console.log(`${email} logged in successfully`, token);
+        //console.log(`${email} logged in successfully`, token);
     } catch (error) {
         res.status(500).json({error:"Internal server error"});
         console.log(error);

@@ -1,4 +1,18 @@
 const Order = require('../models/Order');
+const { sendOrderConfirmationEmail } = require('../utils/mailService');
+const { generateOrderPDF } = require('../utils/pdfService');
+const path = require('path');
+const Firm = require('../models/Firm');
+const Vendor = require('../models/Vendor');
+const shortId = require('shortid');
+
+
+
+const generateCustomOrderId = () => {
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    return `ORD-${date}-${shortId.generate().toUpperCase().slice(0, 6)}`;
+}
+
 
 const placeOrder = async (req, res) => {
     const { user, firmId, items } = req.body;
@@ -21,11 +35,12 @@ const placeOrder = async (req, res) => {
             user,
             firmId,
             items: enrichedItems,
-            totalAmount
+            totalAmount,
+            customOrderId: generateCustomOrderId()
         });
 
         await newOrder.save();
-        res.status(201).json({ message: "Order Placed successfully", orderId: newOrder._id, totalAmount });
+        res.status(201).json({ message: "Order Placed successfully", orderId: newOrder._id, totalAmount, customOrderId:newOrder.customOrderId});
     } catch (error) {
         console.error("Order placement error:", error);
         res.status(500).json({ message: "Internal ssserver error" });
@@ -63,18 +78,48 @@ const getOrdersForVendor = async (req, res) => {
 };
 
 
-const updateOrderStatus=async(req,res)=>{
-    const {orderId}=req.params;
-    const {status}=req.body;
+const updateOrderStatus = async (req, res) => {
+    const { orderId } = req.params;
+    const { status } = req.body;
 
     try {
-        const updateOrder=await Order.findByIdAndUpdate(
-            orderId,{status},{new:true}
+        const updateOrder = await Order.findByIdAndUpdate(
+            orderId, { status }, { new: true }
         );
-        res.status(200).json({message:"Order status updated",updateOrder})
-    } catch (error) {
-        res.status(500).json({error:"Failed to update status"});
-    }
-}
+        if (!updateOrder) {
+            return res.status(404).json({ message: "Order not found" });
+        }
 
-module.exports = { placeOrder, getAllOrders, getOrdersByFirm, getOrdersForVendor, updateOrderStatus };
+        if (status === 'Accepted') {
+            // console.log("this is firmID for debugging",updateOrder.firmId);
+            const firm = await Firm.findById(updateOrder.firmId);
+            // console.log("this is firm",firm);
+            const vendorId = await Vendor.findById(firm.vendor);
+            const pdfPath = path.join(__dirname, `../orders/order_${updateOrder.customOrderId}.pdf`);
+            await generateOrderPDF(updateOrder, firm.firmName, vendorId.email);
+            await sendOrderConfirmationEmail(updateOrder.user.email, updateOrder, pdfPath);
+        }
+
+        res.status(200).json({ message: "Order status updated", updateOrder })
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to update status" });
+    }
+};
+
+const getOrderStatus = async (req, res) => {
+    const { orderId } = req.params;
+    try {
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        res.status(200).json({ status: order.status, user: order.user });
+
+    } catch (error) {
+        console.log("Error fetching order status", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+module.exports = { placeOrder, getAllOrders, getOrdersByFirm, getOrdersForVendor, updateOrderStatus, getOrderStatus };
